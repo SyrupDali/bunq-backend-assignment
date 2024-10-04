@@ -2,36 +2,38 @@
 
 namespace App\Middleware;
 
-use Psr\Http\Message\ServerRequestInterface as Request;
-use Psr\Http\Message\ResponseInterface as Response;
-use App\Models\User;
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\MiddlewareInterface;
+use Psr\Http\Server\RequestHandlerInterface; // Ensure you're using the PSR-15 RequestHandlerInterface
+use Slim\Psr7\Response;
 
-class AuthenticationMiddleware
+class AuthenticationMiddleware implements MiddlewareInterface
 {
-    public function __invoke(Request $request, Response $response, callable $next)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
-        $authHeader = $request->getHeader('Authorization');
-
+        $authHeader = $request->getHeaderLine('Authorization');
+        
         if (!$authHeader) {
-            return $response->withStatus(401)->withJson(['error' => 'Authorization header missing']);
+            return (new Response())->withStatus(401)->withBody("Authorization header not found.");
         }
 
-        $token = str_replace('Bearer ', '', $authHeader[0]);
+        list($type, $token) = explode(' ', $authHeader);
+
+        if ($type !== 'Bearer' || empty($token)) {
+            return (new Response())->withStatus(401)->withBody("Invalid authorization format.");
+        }
 
         try {
+            // Decode the token
             $decoded = JWT::decode($token, new Key($_ENV['JWT_SECRET'], 'HS256'));
-            $user = User::find($decoded->sub);
-            if (!$user) {
-                throw new \Exception('User not found');
-            }
-            // Add user to request attributes
-            $request = $request->withAttribute('user', $user);
+            $request = $request->withAttribute('user', $decoded); // Attach user info to request
         } catch (\Exception $e) {
-            return $response->withStatus(401)->withJson(['error' => 'Invalid token']);
+            return (new Response())->withStatus(401)->withBody("Token is invalid: " . $e->getMessage());
         }
 
-        return $next($request, $response);
+        return $handler->handle($request); // Proceed to the next middleware or route
     }
 }

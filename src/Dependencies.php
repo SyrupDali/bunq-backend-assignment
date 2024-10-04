@@ -3,23 +3,14 @@
 namespace App;
 
 use Psr\Container\ContainerInterface;
-use Slim\App;
 use Illuminate\Database\Capsule\Manager as Capsule;
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 
 class Dependencies
 {
-    public function __invoke(App $app)
+    public function __invoke(ContainerInterface $container)
     {
-        $container = $app->getContainer();
-
-        // // Ensure the container is properly set up
-        // if ($container === null) {
-        //     $this->logError('Container is not initialized.');
-        //     return; // Avoid throwing an exception, which could lead to a 500 error
-        // }
-
         // Database
         $container->set('db', function () {
             $capsule = new Capsule;
@@ -39,15 +30,5 @@ class Dependencies
             $logger->pushHandler(new StreamHandler(__DIR__ . '/../logs/app.log', Logger::DEBUG));
             return $logger;
         });
-    }
-
-    private function logError($message)
-    {
-        // Access the logger if it's available
-        global $app; // Assuming $app is accessible here
-        if ($app->getContainer()->has('logger')) {
-            $logger = $app->getContainer()->get('logger');
-            $logger->error($message);
-        }
     }
 }
