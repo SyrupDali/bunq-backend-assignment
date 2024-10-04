@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Message extends Model
 {
+    protected $table = 'messages';
     protected $fillable = ['group_id', 'user_id', 'message'];
     public $timestamps = true; // enable created_at, it will be automatically set when a new message is created
 

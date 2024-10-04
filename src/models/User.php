@@ -5,6 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class User extends Model
 {
+    protected $table = 'users';
     protected $fillable = ['username'];
     public $timestamps = false; // disable created_at and updated_at
 
