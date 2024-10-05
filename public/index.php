@@ -93,6 +93,13 @@ function create_group($pdo) {
             if ($stmt->execute([':group_name' => $group_name, ':created_by' => $user_id])) {
                 echo json_encode(["message" => "Group created successfully", "id" => $pdo->lastInsertId(), 
                                   "group_name" => $group_name, "created_by" => $username]);
+                // add the creator to the group_users table
+                $stmt = $pdo->prepare("INSERT INTO group_users (group_id, user_id) VALUES (:group_id, :user_id)");
+                if ($stmt->execute([':group_id' => $group_id, ':user_id' => $user_id])) {
+                    echo json_encode(["message" => "Group created and user added successfully"]);
+                } else {
+                    echo json_encode(["message" => "Group created but failed to add user to the group"]);
+                }
             } else {
                 echo json_encode(["message" => "Failed to create group"]);
             }
@@ -116,18 +123,27 @@ function join_group($pdo) {
     $user_id = get_user_id($pdo, $username);
     $group_id = get_group_id($pdo, $group_name);
     if ($user_id && $group_id) {
+        // Check if the user is already in the group
+        $stmt = $pdo->prepare("SELECT * FROM group_users WHERE user_id = :user_id AND group_id = :group_id");
+        $stmt->execute([':user_id' => $user_id, ':group_id' => $group_id]);
+        
+        if ($stmt->fetch()) {
+            echo json_encode(["message" => "User already joined the group"]);
+            return;
+        }
         $stmt = $pdo->prepare("INSERT INTO group_users (group_id, user_id) VALUES (:group_id, :user_id)");
         if ($stmt->execute([':group_id' => $group_id, ':user_id' => $user_id])) {
             echo json_encode(["message" => "Joined group successfully"]);
         } else {
             echo json_encode(["message" => "Failed to join group"]);
         }
-    } else {
+    } else {//TODO: response type
         echo json_encode(["message" => "Invalid input"]);
     }
 }
 
 // Function to send a message to a group
+// TODO: test on postman
 function send_message($pdo) {
     $input = json_decode(file_get_contents('php://input'), true);
     $message = $input['message'] ?? null;
@@ -155,6 +171,7 @@ function send_message($pdo) {
     }
 }
 
+// TODO: test on postman
 function list_messages($pdo, $group_name, $username) {
     $input = json_decode(file_get_contents('php://input'), true);
     $group_name = $input['group_name'] ?? null;
