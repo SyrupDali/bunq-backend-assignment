@@ -72,7 +72,7 @@ function create_user($pdo, $input) {
     // Create the user
     $stmt = $pdo->prepare("INSERT INTO users (username) VALUES (:username)");
     if ($stmt->execute([':username' => $username])) {
-        echo json_encode(["message" => "User created successfully", "id" => $pdo->lastInsertId(), "username" => $username]);
+        echo json_encode(["message" => "User created successfully", "user_id" => $pdo->lastInsertId(), "username" => $username]);
     } else {
         error_response("Failed to create user", 500);
     }
@@ -107,16 +107,14 @@ function create_group($pdo, $input) {
         $group_id = $pdo->lastInsertId();
         echo json_encode([
             "message" => "Group created successfully",
-            "id" => $group_id,
+            "group_id" => $group_id,
             "group_name" => $group_name,
             "created_by" => $username
         ]);
 
         // Add the creator to the group_users table
         $stmt = $pdo->prepare("INSERT INTO group_users (group_id, user_id) VALUES (:group_id, :user_id)");
-        if ($stmt->execute([':group_id' => $group_id, ':user_id' => $user_id])) {
-            echo json_encode(["message" => "Group created and user added successfully"]);
-        } else {
+        if (!$stmt->execute([':group_id' => $group_id, ':user_id' => $user_id])) {
             error_response("Group created but failed to add user to the group", 500);
         }
     } else {
