@@ -15,31 +15,36 @@ if ($pdo == null) {
 $request_method = $_SERVER["REQUEST_METHOD"];
 switch ($request_method) {
     case 'GET':
-        // Example: Get all users
-        if (isset($_GET['action']) && $_GET['action'] == 'get_users') {
-            get_users($pdo);
-        }
-        else if (isset($_GET['action']) && $_GET['action'] == 'list_messages') {
-            list_messages($pdo);
+        if(isset($_GET['action'])) {
+            // Example: Get all users
+            if ($_GET['action'] == 'get_users') {
+                get_users($pdo);
+            }
+            // Example: List messages in a group
+            elseif ($_GET['action'] == 'list_messages') {
+                list_messages($pdo);
+            }
         }
         break;
 
     case 'POST':
-        // Create a new user
-        if (isset($_GET['action']) && $_GET['action'] == 'create_user') {
-            create_user($pdo);
-        }
-        // Create a new group
-        elseif (isset($_GET['action']) && $_GET['action'] == 'create_group') {
-            create_group($pdo);
-        }
-        // Join a group
-        elseif (isset($_GET['action']) && $_GET['action'] == 'join_group') {
-            join_group($pdo);
-        }
-        // Send a message
-        elseif (isset($_GET['action']) && $_GET['action'] == 'send_message') {
-            send_message($pdo);
+        if (isset($_GET['action'])) {
+            // Example: Create a new user
+            if ($_GET['action'] == 'create_user') {
+                create_user($pdo);
+            }
+            // Example: Create a new group
+            elseif ($_GET['action'] == 'create_group') {
+                create_group($pdo);
+            }
+            // Example: Join a group
+            elseif ($_GET['action'] == 'join_group') {
+                join_group($pdo);
+            }
+            // Example: Send a message
+            elseif ($_GET['action'] == 'send_message') {
+                send_message($pdo);
+            }
         }
         break;
 
@@ -64,7 +69,7 @@ function create_user($pdo) {
     if ($username) {
         $stmt = $pdo->prepare("INSERT INTO users (username) VALUES (:username)");
         if ($stmt->execute([':username' => $username])) {
-            echo json_encode(["message" => "User created successfully"]);
+            echo json_encode(["message" => "User created successfully", "id" => $pdo->lastInsertId(), "username" => $username]);
         } else {
             echo json_encode(["message" => "Failed to create user"]);
         }
@@ -76,15 +81,23 @@ function create_user($pdo) {
 // Function to create a new group
 function create_group($pdo) {
     $input = json_decode(file_get_contents('php://input'), true);
-    $group_name = $input['name'] ?? null;
-    $created_by = $input['created_by'] ?? null;  // User ID of creator
+    $group_name = $input['group_name'] ?? null;
+    $username = $input['username'] ?? null;
 
-    if ($group_name && $created_by) {
-        $stmt = $pdo->prepare("INSERT INTO groups (name, created_by) VALUES (:name, :created_by)");
-        if ($stmt->execute([':name' => $group_name, ':created_by' => $created_by])) {
-            echo json_encode(["message" => "Group created successfully"]);
+    if ($group_name && $username) {
+        // Lookup the user ID from the username
+        $user_id = get_user_id($pdo, $username);
+        if ($user_id) {
+            // Insert the new group with the user ID
+            $stmt = $pdo->prepare("INSERT INTO groups (name, created_by) VALUES (:group_name, :created_by)");
+            if ($stmt->execute([':group_name' => $group_name, ':created_by' => $user_id])) {
+                echo json_encode(["message" => "Group created successfully", "id" => $pdo->lastInsertId(), 
+                                  "group_name" => $group_name, "created_by" => $username]);
+            } else {
+                echo json_encode(["message" => "Failed to create group"]);
+            }
         } else {
-            echo json_encode(["message" => "Failed to create group"]);
+            echo json_encode(["message" => "User not found"]);
         }
     } else {
         echo json_encode(["message" => "Invalid input"]);
@@ -94,9 +107,14 @@ function create_group($pdo) {
 // Function to join a group
 function join_group($pdo) {
     $input = json_decode(file_get_contents('php://input'), true);
-    $user_id = $input['user_id'] ?? null;
-    $group_id = $input['group_id'] ?? null;
-
+    $username = $input['username'] ?? null;
+    $group_name = $input['group_name'] ?? null;
+    if (!$username || !$group_name) {
+        echo json_encode(["message" => "Invalid input"]);
+        return;
+    }
+    $user_id = get_user_id($pdo, $username);
+    $group_id = get_group_id($pdo, $group_name);
     if ($user_id && $group_id) {
         $stmt = $pdo->prepare("INSERT INTO group_users (group_id, user_id) VALUES (:group_id, :user_id)");
         if ($stmt->execute([':group_id' => $group_id, ':user_id' => $user_id])) {
@@ -109,35 +127,84 @@ function join_group($pdo) {
     }
 }
 
-// Function to send a message in a group
+// Function to send a message to a group
 function send_message($pdo) {
     $input = json_decode(file_get_contents('php://input'), true);
-    $group_id = $input['group_id'] ?? null;
-    $user_id = $input['user_id'] ?? null;
     $message = $input['message'] ?? null;
+    $username = $input['username'] ?? null;
+    $group_name = $input['group_name'] ?? null;
 
-    if ($group_id && $user_id && $message) {
-        $stmt = $pdo->prepare("INSERT INTO messages (group_id, user_id, message) VALUES (:group_id, :user_id, :message)");
-        if ($stmt->execute([':group_id' => $group_id, ':user_id' => $user_id, ':message' => $message])) {
-            echo json_encode(["message" => "Message sent successfully"]);
+    if ($message && $username && $group_name) {
+        // Lookup the user ID and group ID
+        $user_id = get_user_id($pdo, $username);
+        $group_id = get_group_id($pdo, $group_name);
+
+        if ($user_id && $group_id) {
+            // Insert the message with the user ID and group ID
+            $stmt = $pdo->prepare("INSERT INTO messages (group_id, user_id, message) VALUES (:group_id, :user_id, :message)");
+            if ($stmt->execute([':group_id' => $group_id, ':user_id' => $user_id, ':message' => $message])) {
+                echo json_encode(["message" => "Message sent successfully"]);
+            } else {
+                echo json_encode(["message" => "Failed to send message"]);
+            }
         } else {
-            echo json_encode(["message" => "Failed to send message"]);
+            echo json_encode(["message" => "User or group not found"]);
         }
     } else {
         echo json_encode(["message" => "Invalid input"]);
     }
 }
 
-// Function to list all messages in a group
-function list_messages($pdo) {
-    $group_id = $_GET['group_id'] ?? null;
+function list_messages($pdo, $group_name, $username) {
+    $input = json_decode(file_get_contents('php://input'), true);
+    $group_name = $input['group_name'] ?? null;
+    $username = $input['username'] ?? null;
 
-    if ($group_id) {
-        $stmt = $pdo->prepare("SELECT * FROM messages WHERE group_id = :group_id ORDER BY created_at ASC");
-        $stmt->execute([':group_id' => $group_id]);
-        $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        echo json_encode($messages);
-    } else {
-        echo json_encode(["message" => "Group ID is required"]);
+    if (!$group_name || !$username) {
+        echo json_encode(["message" => "Invalid input"]);
+        return;
     }
+    // Lookup the user ID and group ID
+    $user_id = get_user_id($pdo, $username);
+    $group_id = get_group_id($pdo, $group_name);
+
+    if ($user_id && $group_id) {
+        // Check if the user is part of the group
+        $stmt = $pdo->prepare("SELECT * FROM group_users WHERE group_id = :group_id AND user_id = :user_id");
+        $stmt->execute([':group_id' => $group_id, ':user_id' => $user_id]);
+        $is_in_group = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($is_in_group) {
+            // Fetch all messages from the group, including other users' messages
+            $stmt = $pdo->prepare("SELECT messages.message, users.username, messages.created_at 
+                                   FROM messages 
+                                   JOIN users ON messages.user_id = users.id
+                                   WHERE messages.group_id = :group_id 
+                                   ORDER BY messages.created_at ASC");
+            $stmt->execute([':group_id' => $group_id]);
+            $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            echo json_encode($messages);
+        } else {
+            echo json_encode(["message" => "User is not part of this group"]);
+        }
+    } else {
+        echo json_encode(["message" => "User or group not found"]);
+    }
+}
+
+
+// Helper function to get user ID from username
+function get_user_id($pdo, $username) {
+    $stmt = $pdo->prepare("SELECT id FROM users WHERE username = :username");
+    $stmt->execute([':username' => $username]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $user['id'] ?? null;
+}
+
+// Helper function to get group ID from group name
+function get_group_id($pdo, $group_name) {
+    $stmt = $pdo->prepare("SELECT id FROM groups WHERE name = :group_name");
+    $stmt->execute([':group_name' => $group_name]);
+    $group = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $group['id'] ?? null;
 }
