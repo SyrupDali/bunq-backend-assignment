@@ -5,7 +5,7 @@ require __DIR__ . '/../vendor/autoload.php';
 use App\SQLiteConnection;
 
 // Establish a connection to the SQLite database
-$pdo = (new SQLiteConnection())->connect();
+$pdo = (new SQLiteConnection())->connect(true);
 
 if ($pdo == null) {
     echo 'Whoops, could not connect to the SQLite database!';
@@ -40,6 +40,13 @@ if ($request_method === 'GET') {
         send_message($pdo, $input); // Send a message to a specific group
     }
     else {
+        http_response_code(404);
+        echo json_encode(["message" => "Invalid Request"]);
+    }
+} elseif ($request_method === 'DELETE') {
+    if ($request_uri === '/clear') {
+        clear_entries($pdo); // Clear all entries
+    } else {
         http_response_code(404);
         echo json_encode(["message" => "Invalid Request"]);
     }
@@ -242,6 +249,26 @@ function list_messages($pdo) {
     echo json_encode($messages);
 }
 
+function clear_entries($pdo) {
+    try {
+        // Disable foreign key checks to avoid constraint errors
+        $pdo->exec("PRAGMA foreign_keys = OFF;");
+
+        // Clear data from each table
+        $pdo->exec("DELETE FROM messages");
+        $pdo->exec("DELETE FROM group_users");
+        $pdo->exec("DELETE FROM users");
+        $pdo->exec("DELETE FROM groups");
+        $pdo->exec("DELETE FROM sqlite_sequence");
+
+        // Enable foreign key checks again
+        $pdo->exec("PRAGMA foreign_keys = ON;");
+
+        echo json_encode(["message" => "All entries cleared successfully."]);
+    } catch (PDOException $e) {
+        error_response("Failed to clear entries: " . $e->getMessage(), 500);
+    }
+}
 
 // Standardized error response helper
 function error_response($message, $code) {

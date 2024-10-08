@@ -3,48 +3,44 @@
 use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Client;
 use App\SQLiteConnection;
+use App\Config;
+use App\Database;
+
 class ApiTest extends TestCase {
-    private $pdo;
+    private static $pdo;
     private $client;
-    
+
+    // This method runs before each test
     protected function setUp(): void {
         $this->client = new Client(['base_uri' => 'http://localhost:8000']);
-        // Setup SQLite in-memory database for testing
-        $this->pdo = new PDO('sqlite::memory:');
-        // Create necessary tables for testing
-        $this->pdo->exec("
-            CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT);
-            CREATE TABLE groups (id INTEGER PRIMARY KEY, name TEXT, created_by INTEGER);
-            CREATE TABLE group_users (group_id INTEGER, user_id INTEGER);
-        ");
-
         // Seed with a test user
-        $stmt = $this->pdo->prepare("INSERT INTO users (username) VALUES (:username)");
-        $stmt->execute([':username' => 'testuser']);
-        
-        // Start a transaction
-        $this->pdo->beginTransaction();
+        $this->client->request('DELETE', '/clear');
     }
 
+    // This method runs after each test
     protected function tearDown(): void {
         // Roll back the transaction
-        $this->pdo->rollBack();
+        $this->client->request('DELETE', '/clear');
+    }
+
+    private function seedTestUser($username) {
+        $input = [
+            'username' => $username
+        ];
+        $this->client->request('POST', '/users', [
+            'json' => $input
+        ]);
     }
 
     public function testCreateGroupSuccess() {
         // First, create the user by making a request to the API
-        $userInput = array(
-            'username' => 'testuser1'
-        );
-        $userResponse = $this->client->request('POST', '/users', [
-            'json' => $userInput
-        ]);
-        $this->assertEquals(200, $userResponse->getStatusCode(), 'Failed to create test user');
-    
+        
+        $this->seedTestUser('testuser');
+        
         // Now, attempt to create the group
         $groupInput = array(
             'group_name' => 'Test Group1',
-            'username' => 'testuser1'
+            'username' => 'testuser'
         );
         $groupResponse = $this->client->request('POST', '/groups', [
             'json' => $groupInput
@@ -58,18 +54,26 @@ class ApiTest extends TestCase {
 
     // Test case for group already exists
     public function testCreateGroupAlreadyExists() {
+        $this->seedTestUser('testuser');
         // First, create the group
         $input = [
             'group_name' => 'Existing Group',
             'username' => 'testuser'
         ];
-        $this->callApi('/groups', 'POST', $input);
-
+        $this->client->request('POST', '/groups', [
+            'json' => $input
+        ]);
         // Try to create the same group again
-        $response = $this->callApi('/groups', 'POST', $input);
-
-        $this->assertEquals(409, $response['status']);
-        $this->assertEquals('Group already exists', $response['data']['message']);
+        try {
+            $response = $this->client->request('POST', '/groups', [
+                'json' => $input
+            ]);
+        } catch (GuzzleHttp\Exception\ClientException $e) {
+            $response = $e->getResponse(); // Get the response from the exception
+        }
+    
+        $this->assertEquals(409, $response->getStatusCode());
+        $this->assertEquals('Group already exists', json_decode($response->getBody(), true)['error']);
     }
 
     // Test case for missing username
@@ -77,10 +81,15 @@ class ApiTest extends TestCase {
         $input = [
             'group_name' => 'Group Without Username'
         ];
-        $response = $this->callApi('/groups', 'POST', $input);
-
-        $this->assertEquals(400, $response['status']);
-        $this->assertEquals('Invalid input: both group_name and username are required', $response['data']['message']);
+        try {
+            $response = $this->client->request('POST', '/groups', [
+                'json' => $input
+            ]);
+        } catch (GuzzleHttp\Exception\ClientException $e) {
+            $response = $e->getResponse(); // Get the response from the exception
+        }
+        $this->assertEquals(400, $response->getStatusCode());
+        $this->assertEquals('Invalid input: both group_name and username are required', json_decode($response->getBody(), true)['error']);
     }
 
     // Test case for missing group name
@@ -88,26 +97,15 @@ class ApiTest extends TestCase {
         $input = [
             'username' => 'testuser'
         ];
-        $response = $this->callApi('/groups', 'POST', $input);
-
-        $this->assertEquals(400, $response['status']);
-        $this->assertEquals('Invalid input: both group_name and username are required', $response['data']['message']);
-    }
-
-    // Mock API call
-    private function callApi($uri, $method, $data) {
-        // Simulate a request to the API
-        // You may want to adjust this according to your routing logic
-        $_SERVER['REQUEST_METHOD'] = $method;
-        $_SERVER['REQUEST_URI'] = $uri;
-        
-        // Simulate input data
-        file_put_contents('php://input', json_encode($data));
-
-        ob_start(); // Start output buffering
-        include __DIR__ . '/../api.php'; // Path to your API file
-        $output = ob_get_clean(); // Get output
-
-        return json_decode($output, true); // Return as array
+        try {
+            $response = $this->client->request('POST', '/groups', [
+                'json' => $input
+            ]);
+        }
+        catch (GuzzleHttp\Exception\ClientException $e) {
+            $response = $e->getResponse(); // Get the response from the exception
+        }
+        $this->assertEquals(400, $response->getStatusCode());
+        $this->assertEquals('Invalid input: both group_name and username are required', json_decode($response->getBody(), true)['error']);
     }
 }
