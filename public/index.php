@@ -5,7 +5,7 @@ require __DIR__ . '/../vendor/autoload.php';
 use App\SQLiteConnection;
 
 // Establish a connection to the SQLite database
-$pdo = (new SQLiteConnection())->connect(true);
+$pdo = (new SQLiteConnection())->connect();
 
 if ($pdo == null) {
     echo 'Whoops, could not connect to the SQLite database!';
@@ -19,7 +19,7 @@ if ($request_method === 'GET') {
     if ($request_uri === '/users') {
         get_users($pdo); // Fetch all users
     } elseif ($request_uri === '/groups') {
-        // This could be to fetch all groups (not shown in previous examples)
+        get_groups($pdo); // Fetch all groups
     } elseif ($request_uri === '/groups/messages') {
         list_messages($pdo); // List messages for a specific group
     }
@@ -57,9 +57,13 @@ if ($request_method === 'GET') {
 
 // Function to fetch all users
 function get_users($pdo) {
-    $stmt = $pdo->query("SELECT * FROM users");
-    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    echo json_encode($users);
+    try {
+        $stmt = $pdo->query("SELECT * FROM users");
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($users);
+    } catch (PDOException $e) {
+        error_response("Failed to fetch users: " . $e->getMessage(), 500);
+    }
 }
 
 function create_user($pdo, $input) {
@@ -73,18 +77,28 @@ function create_user($pdo, $input) {
     $stmt = $pdo->prepare("SELECT id FROM users WHERE username = :username");
     $stmt->execute([':username' => $username]);
     if ($stmt->fetch()) {
-        error_response("Username already exists", 400);
+        error_response("Username already exists", 409);
     }
 
     // Create the user
     $stmt = $pdo->prepare("INSERT INTO users (username) VALUES (:username)");
     if ($stmt->execute([':username' => $username])) {
+        http_response_code(201); // Created status
         echo json_encode(["message" => "User created successfully", "user_id" => $pdo->lastInsertId(), "username" => $username]);
     } else {
         error_response("Failed to create user", 500);
     }
 }
 
+function get_groups($pdo) {
+    try {
+        $stmt = $pdo->query("SELECT * FROM groups");
+        $groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        echo json_encode($groups);
+    } catch (PDOException $e) {
+        error_response("Failed to fetch groups: " . $e->getMessage(), 500);
+    }
+}
 
 // Function to create a new group
 function create_group($pdo, $input) {
@@ -111,6 +125,7 @@ function create_group($pdo, $input) {
     // Create the group
     $stmt = $pdo->prepare("INSERT INTO groups (name, created_by) VALUES (:group_name, :created_by)");
     if ($stmt->execute([':group_name' => $group_name, ':created_by' => $user_id])) {
+        http_response_code(201); // Created status
         $group_id = $pdo->lastInsertId();
         echo json_encode([
             "message" => "Group created successfully",
@@ -161,6 +176,7 @@ function join_group($pdo, $input) {
     // Add the user to the group
     $stmt = $pdo->prepare("INSERT INTO group_users (group_id, user_id) VALUES (:group_id, :user_id)");
     if ($stmt->execute([':group_id' => $group_id, ':user_id' => $user_id])) {
+        http_response_code(201); // Created status
         echo json_encode(["message" => "Joined group successfully"]);
     } else {
         error_response("Failed to join group", 500);
@@ -201,6 +217,7 @@ function send_message($pdo, $input) {
     // Insert the message
     $stmt = $pdo->prepare("INSERT INTO messages (group_id, user_id, message) VALUES (:group_id, :user_id, :message)");
     if ($stmt->execute([':group_id' => $group_id, ':user_id' => $user_id, ':message' => $message])) {
+        http_response_code(201); // Created status
         echo json_encode(["message" => "Message sent successfully"]);
     } else {
         error_response("Failed to send message", 500);

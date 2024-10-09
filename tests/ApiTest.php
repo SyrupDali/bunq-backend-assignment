@@ -46,7 +46,7 @@ class ApiTest extends TestCase {
             'json' => $groupInput
         ]);
     
-        $this->assertEquals(200, $groupResponse->getStatusCode());
+        $this->assertEquals(201, $groupResponse->getStatusCode());
         $groupData = json_decode($groupResponse->getBody(), true);
         $this->assertEquals('Group created successfully', $groupData['message']);
     }
