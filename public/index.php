@@ -8,7 +8,6 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Factory\AppFactory;
 
 $app = AppFactory::create();
-
 // Establish a connection to the SQLite database
 $pdo = (new SQLiteConnection())->connect();
 

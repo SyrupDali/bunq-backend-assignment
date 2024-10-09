@@ -48,7 +48,7 @@ check the API specification [here](api_spec.yaml)
 
 ## Automated Tests
 
-1. **Change line 8 in public/index.php to**: 
+1. **Change line 12 in public/index.php to**: 
     
     ```php
 
@@ -59,7 +59,7 @@ check the API specification [here](api_spec.yaml)
     ```bash
     ./vendor/bin/phpunit tests/ApiTest.php
 
-3. **Change line 8 in public/index.php back to**: 
+3. **Change line 12 in public/index.php back to**: 
     
     ```php
     $pdo = (new SQLiteConnection())->connect();
