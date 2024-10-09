@@ -2,12 +2,8 @@
 
 use PHPUnit\Framework\TestCase;
 use GuzzleHttp\Client;
-use App\SQLiteConnection;
-use App\Config;
-use App\Database;
 
 class ApiTest extends TestCase {
-    private static $pdo;
     private $client;
 
     // This method runs before each test
