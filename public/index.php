@@ -10,7 +10,7 @@ use Slim\Factory\AppFactory;
 $app = AppFactory::create();
 
 // Establish a connection to the SQLite database
-$pdo = (new SQLiteConnection())->connect(true);
+$pdo = (new SQLiteConnection())->connect();
 
 if ($pdo == null) {
     die('Whoops, could not connect to the SQLite database!');
@@ -155,10 +155,7 @@ function join_group($pdo, $input) {
         return [
             'status' => 201, // Set the status code for created
             'body' => json_encode([
-                "message" => "User joined group successfully",
-                "group_id" => $group_id,
-                "group_name" => $group_name,
-                "username" => $username
+                "message" => "User joined group successfully"
             ])
         ];
     } else {
@@ -201,11 +198,7 @@ function send_message($pdo, $input) {
         return [
             'status' => 201, // Set the status code for created
             'body' => json_encode([
-                "message" => "Message sent successfully",
-                "group_id" => $group_id,
-                "group_name" => $group_name,
-                "username" => $username,
-                "message" => $message
+                "message" => "Message sent successfully"
             ])
         ];
     } else {
