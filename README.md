@@ -12,6 +12,7 @@ A simple group messaging application that allows users to create groups, join ex
 - [Installation](#installation)
 - [API Specification](#api-specification)
 - [Automated Tests](#automated-tests)
+- [Running the Application](#running-the-application)
 
 ## Features
 
@@ -41,11 +42,6 @@ A simple group messaging application that allows users to create groups, join ex
    ```bash
     composer install
 
-3. **Start the PHP server**:
-
-    ```bash
-    php -S localhost:8000 -t public
-
 ## API Specification
 check the API specification [here](api_spec.yaml)
 
@@ -55,3 +51,20 @@ check the API specification [here](api_spec.yaml)
 
     ```bash
     ./vendor/bin/phpunit tests
+
+## Running the Application
+
+1. **Start the PHP server**:
+
+    ```bash
+    php -S localhost:8000 -t public
+
+2. **Use Postman or cURL to test the API endpoints**:
+    
+    Example cURL commands:
+    
+    ```bash
+    # Get all users
+    curl -X GET http://localhost:8000/users
+    # Create a new user
+    curl -X POST http://localhost:8000/users -d '{"username": "john_doe"}'
