@@ -17,11 +17,13 @@ use Slim\Factory\AppFactory;
 
 $app = AppFactory::create();
 
-// Establish a connection to the SQLite database
 $pdo = (new SQLiteConnection())->connect();
 
 if ($pdo === null) {
-    die('Whoops, could not connect to the SQLite database!');
+    // Handle the error gracefully
+    http_response_code(500); // Internal Server Error
+    echo json_encode(['error' => 'Could not connect to the database.']);
+    exit; // Stop further processing
 }
 
 // Initialize services with the PDO connection

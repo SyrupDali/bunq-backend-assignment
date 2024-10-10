@@ -14,10 +14,7 @@ class GroupServiceTest extends TestCase {
     private $groupService;
 
     protected function setUp(): void {
-        // Create a mock for PDO
         $this->mockPdo = $this->createMock(PDO::class);
-        
-        // Create a mock for UserService
         $this->mockUserService = $this->createMock(UserService::class);
         
         // Instantiate the GroupService with the mocked PDO and UserService
@@ -56,7 +53,6 @@ class GroupServiceTest extends TestCase {
         // Call the service method
         $result = $this->groupService->createGroup(['group_name' => 'Test Group', 'username' => 'testuser']);
 
-        // Assertions
         $this->assertEquals(201, $result['status']);
         $this->assertEquals(json_encode([
             "message" => "Group created successfully",
@@ -70,10 +66,8 @@ class GroupServiceTest extends TestCase {
         // Set up mock for user validation to return null
         $this->mockUserService->method('getUserId')->willReturn(null);
 
-        // Call the service method
         $result = $this->groupService->createGroup(['group_name' => 'Test Group', 'username' => 'testuser']);
 
-        // Assertions
         $this->assertEquals(404, $result['status']);
         $this->assertEquals(json_encode(['error' => 'User not found']), $result['body']);
     }
@@ -91,10 +85,8 @@ class GroupServiceTest extends TestCase {
             ->with($this->stringContains('SELECT id FROM groups WHERE name = :group_name'))
             ->willReturn($mockStatement);
 
-        // Call the service method
         $result = $this->groupService->createGroup(['group_name' => 'Existing Group', 'username' => 'testuser']);
 
-        // Assertions
         $this->assertEquals(409, $result['status']);
         $this->assertEquals(json_encode(['error' => 'Group already exists']), $result['body']);
     }
@@ -122,10 +114,8 @@ class GroupServiceTest extends TestCase {
                 }
             });
             
-        // Call the service method
         $result = $this->groupService->createGroup(['group_name' => 'Test Group', 'username' => 'testuser']);
 
-        // Assertions
         $this->assertEquals(500, $result['status']);
         $this->assertEquals(json_encode(['error' => 'Failed to create group']), $result['body']);
     }

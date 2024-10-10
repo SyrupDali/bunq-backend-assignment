@@ -16,14 +16,13 @@ class SQLiteConnection {
      * Return an instance of the PDO object that connects to the SQLite database
      * @return \PDO
      */
-    public function connect($isTest = false) {
+    public function connect() {
         if ($this->pdo == null) {
-            $dbpath = ($isTest) ? Config::PATH_TO_SQLITE_FILE_TEST : Config::PATH_TO_SQLITE_FILE;
             try {
-                $this->pdo = new \PDO("sqlite:" . $dbpath);
+                $this->pdo = new \PDO("sqlite:" . Config::PATH_TO_SQLITE_FILE);
             } catch (\PDOException $e) {
                 // Handle the exception here
-                echo 'Connection failed: ' . $e->getMessage();
+                error_log('Connection error: ' . $e->getMessage());
                 return null;
             }
         }
