@@ -1,1 +1,3 @@
 /vendor/
+/database/chat.db
+/database/test.db
