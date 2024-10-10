@@ -239,7 +239,7 @@ paths:
                   error:
                     type: string
 
-  /groups/messages:
+  /messages:
     get:
       summary: Fetch all messages for a specific group
       requestBody:

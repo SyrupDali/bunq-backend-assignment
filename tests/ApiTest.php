@@ -134,7 +134,7 @@ class ApiTest extends TestCase {
             'username' => 'anotheruser',
             'group_name' => 'Test Group'
         ];
-        $response = $this->client->request('POST', '/groups/messages', [
+        $response = $this->client->request('POST', '/messages', [
             'json' => $messageInput
         ]);
 
@@ -164,7 +164,7 @@ class ApiTest extends TestCase {
         ];
         
         try {
-            $response = $this->client->request('POST', '/groups/messages', [
+            $response = $this->client->request('POST', '/messages', [
                 'json' => $messageInput
             ]);
         } catch (GuzzleHttp\Exception\ClientException $e) {
@@ -172,7 +172,7 @@ class ApiTest extends TestCase {
         }
 
         $this->assertEquals(403, $response->getStatusCode());
-        $this->assertEquals('User is not part of this group', json_decode($response->getBody(), true)['error']);
+        $this->assertEquals('User is not a member of this group', json_decode($response->getBody(), true)['error']);
     }
 
     // Test for listing messages successfully
@@ -203,7 +203,7 @@ class ApiTest extends TestCase {
             'username' => 'testuser',
             'group_name' => 'Test Group'
         ];
-        $this->client->request('POST', '/groups/messages', [
+        $this->client->request('POST', '/messages', [
             'json' => $messageInput
         ]);
         
@@ -212,7 +212,7 @@ class ApiTest extends TestCase {
             'group_name' => 'Test Group',
             'username' => 'anotheruser'
         ];
-        $response = $this->client->request('GET', '/groups/messages', [
+        $response = $this->client->request('GET', '/messages', [
             'json' => $listInput
         ]);
 
@@ -243,7 +243,7 @@ class ApiTest extends TestCase {
         ];
         
         try {
-            $response = $this->client->request('GET', '/groups/messages', [
+            $response = $this->client->request('GET', '/messages', [
                 'json' => $listInput
             ]);
         } catch (GuzzleHttp\Exception\ClientException $e) {
@@ -251,7 +251,7 @@ class ApiTest extends TestCase {
         }
 
         $this->assertEquals(403, $response->getStatusCode());
-        $this->assertEquals('User is not part of this group', json_decode($response->getBody(), true)['error']);
+        $this->assertEquals('User is not a member of this group', json_decode($response->getBody(), true)['error']);
     }
     
     public function testCreateGroupSuccess() {
