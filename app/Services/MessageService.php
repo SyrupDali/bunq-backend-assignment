@@ -4,6 +4,9 @@ namespace App\Services;
 
 use PDO;
 use PDOException;
+use DateTime;
+use DateTimeZone;
+
 
 class MessageService {
     private $pdo;
@@ -94,6 +97,15 @@ class MessageService {
         try {
             $stmt->execute([':group_id' => $group_id]);
             $messages = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Convert timestamps to Amsterdam time
+            $amsterdamTimezone = new DateTimeZone('Europe/Amsterdam');
+            foreach ($messages as &$message) {
+                $createdAt = new DateTime($message['created_at'], new DateTimeZone('UTC')); // Assuming the timestamp is in UTC
+                $createdAt->setTimezone($amsterdamTimezone); // Convert to Amsterdam time
+                $message['created_at'] = $createdAt->format('Y-m-d H:i:s'); // Format it back to string
+            }
+
             return [
                 'status' => 200,
                 'body' => json_encode($messages)
