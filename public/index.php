@@ -26,8 +26,8 @@ if ($pdo === null) {
 
 // Initialize services with the PDO connection
 $userService = new UserService($pdo);
-$groupService = new GroupService($pdo);
-$messageService = new MessageService($pdo);
+$groupService = new GroupService($pdo, $userService);
+$messageService = new MessageService($pdo, $userService, $groupService);
 $adminService = new AdminService($pdo);
 
 // Initialize controllers with their respective services

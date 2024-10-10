@@ -48,18 +48,7 @@ check the API specification [here](api_spec.yaml)
 
 ## Automated Tests
 
-1. **Change line 21 in public/index.php to**: 
-    
-    ```php
-
-    $pdo = (new SQLiteConnection())->connect(true);
-
-2. **Then start the PHP server and run the tests using the following command under root directory**:
+1. **Run the tests using the following command under root directory**:
 
     ```bash
-    ./vendor/bin/phpunit tests/ApiTest.php
-
-3. **Change line 21 in public/index.php back to**: 
-    
-    ```php
-    $pdo = (new SQLiteConnection())->connect();
+    ./vendor/bin/phpunit tests

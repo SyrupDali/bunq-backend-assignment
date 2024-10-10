@@ -7,9 +7,13 @@ use PDOException;
 
 class MessageService {
     private $pdo;
+    private $userService;
+    private $groupService;
 
-    public function __construct(PDO $pdo) {
+    public function __construct(PDO $pdo, UserService $userService, GroupService $groupService) {
         $this->pdo = $pdo;
+        $this->userService = $userService;
+        $this->groupService = $groupService;
     }
 
     public function sendMessage(array $input) {
@@ -23,15 +27,13 @@ class MessageService {
         }
 
         // Check if user exists
-        $userService = new UserService($this->pdo);
-        $user_id = $userService->getUserId($username);
+        $user_id = $this->userService->getUserId($username);
         if (!$user_id) {
             return $this->errorResponse("User not found", 404);
         }
 
         // Check if the group exists
-        $groupService = new GroupService($this->pdo);
-        $group_id = $groupService->getGroupId($group_name);
+        $group_id = $this->groupService->getGroupId($group_name);
         if (!$group_id) {
             return $this->errorResponse("Group not found", 404);
         }
@@ -66,15 +68,13 @@ class MessageService {
         }
 
         // Check if user exists
-        $userService = new UserService($this->pdo);
-        $user_id = $userService->getUserId($username);
+        $user_id = $this->userService->getUserId($username);
         if (!$user_id) {
             return $this->errorResponse("User not found", 404);
         }
 
         // Check if the group exists
-        $groupService = new GroupService($this->pdo);
-        $group_id = $groupService->getGroupId($group_name);
+        $group_id = $this->groupService->getGroupId($group_name);
         if (!$group_id) {
             return $this->errorResponse("Group not found", 404);
         }

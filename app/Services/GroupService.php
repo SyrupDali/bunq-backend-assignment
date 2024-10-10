@@ -7,9 +7,11 @@ use PDOException;
 
 class GroupService {
     private $pdo;
-
-    public function __construct(PDO $pdo) {
+    private $userService;
+    
+    public function __construct(PDO $pdo, UserService $userService) {
         $this->pdo = $pdo;
+        $this->userService = $userService;
     }
 
     public function getGroups() {
@@ -40,7 +42,7 @@ class GroupService {
             return $this->errorResponse("Invalid input: both group_name and username are required", 400);
         }
 
-        $user_id = (new UserService($this->pdo))->getUserId($username);
+        $user_id = $this->userService->getUserId($username);
         if (!$user_id) {
             return $this->errorResponse("User not found", 404);
         }
@@ -84,7 +86,7 @@ class GroupService {
             return $this->errorResponse("Group not found", 404);
         }
 
-        $user_id = (new UserService($this->pdo))->getUserId($username);
+        $user_id = $this->userService->getUserId($username);
         if (!$user_id) {
             return $this->errorResponse("User not found", 404);
         }
