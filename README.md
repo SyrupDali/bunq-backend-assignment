@@ -24,6 +24,8 @@ A simple group messaging application that allows users to create groups, join ex
 
 - **PHP**: Server-side scripting language.
 - **SQLite**: Lightweight database engine used to store user and group data.
+- **Slim Framework**: PHP micro-framework used to build the API.
+- **PHPUnit**: Testing framework for PHP.
 - **Postman**: Tool for testing API endpoints.
 
 ## Installation
@@ -31,8 +33,8 @@ A simple group messaging application that allows users to create groups, join ex
 1. **Clone the repository**:
 
    ```bash
-   git clone https://github.com/yourusername/group-messaging-app.git
-   cd group-messaging-app
+   git clone https://github.com/SyrupDali/bunq-backend-assignment.git
+   cd bunq-backend-assignment
 
 2. **Install PHP dependencies**:
 
@@ -43,6 +45,7 @@ A simple group messaging application that allows users to create groups, join ex
 
     ```bash
     php -S localhost:8000 -t public
+
 ## API Specification
 check the API specification [here](api_spec.yaml)
 
