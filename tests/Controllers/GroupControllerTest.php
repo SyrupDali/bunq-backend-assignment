@@ -7,7 +7,6 @@ use App\Services\GroupService;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
-use Slim\Psr7\Request; // Import Slim's Request class
 use Slim\Psr7\Response; // Import Slim's Response class
 
 class GroupControllerTest extends TestCase
