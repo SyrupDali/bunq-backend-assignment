@@ -8,20 +8,23 @@ use PHPUnit\Framework\TestCase;
 use PDO;
 use PDOStatement; // Import PDOStatement
 
-class GroupServiceTest extends TestCase {
+class GroupServiceTest extends TestCase
+{
     private $mockPdo;
     private $mockUserService;
     private $groupService;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         $this->mockPdo = $this->createMock(PDO::class);
         $this->mockUserService = $this->createMock(UserService::class);
-        
+
         // Instantiate the GroupService with the mocked PDO and UserService
         $this->groupService = new GroupService($this->mockPdo, $this->mockUserService);
     }
 
-    public function testCreateGroupSuccess() {
+    public function testCreateGroupSuccess()
+    {
         // Set up mock for user validation
         $this->mockUserService->method('getUserId')->willReturn(1);
 
@@ -62,7 +65,8 @@ class GroupServiceTest extends TestCase {
         ]), $result['body']);
     }
 
-    public function testCreateGroupUserNotFound() {
+    public function testCreateGroupUserNotFound()
+    {
         // Set up mock for user validation to return null
         $this->mockUserService->method('getUserId')->willReturn(null);
 
@@ -72,7 +76,8 @@ class GroupServiceTest extends TestCase {
         $this->assertEquals(json_encode(['error' => 'User not found']), $result['body']);
     }
 
-    public function testCreateGroupAlreadyExists() {
+    public function testCreateGroupAlreadyExists()
+    {
         // Set up mock for user validation
         $this->mockUserService->method('getUserId')->willReturn(1);
 
@@ -113,7 +118,7 @@ class GroupServiceTest extends TestCase {
                     return $insertGroupStatement;
                 }
             });
-            
+
         $result = $this->groupService->createGroup(['group_name' => 'Test Group', 'username' => 'testuser']);
 
         $this->assertEquals(500, $result['status']);

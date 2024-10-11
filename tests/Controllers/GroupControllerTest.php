@@ -10,14 +10,16 @@ use Psr\Http\Message\ServerRequestInterface;
 use Slim\Psr7\Request; // Import Slim's Request class
 use Slim\Psr7\Response; // Import Slim's Response class
 
-class GroupControllerTest extends TestCase {
+class GroupControllerTest extends TestCase
+{
     private $request;
     private $response;
     private $groupService;
     private $groupController;
 
     // This method is called before every test
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         // Create a mock request
         $this->request = $this->createMock(ServerRequestInterface::class);
         // Use a real response object
@@ -30,7 +32,8 @@ class GroupControllerTest extends TestCase {
         $this->groupController = new GroupController($this->groupService);
     }
 
-    public function testCreateGroupSuccess() {
+    public function testCreateGroupSuccess()
+    {
         $this->groupService->method('createGroup')->willReturn([
             'status' => 201,
             'body' => json_encode(['message' => 'Group created successfully'])
@@ -44,7 +47,8 @@ class GroupControllerTest extends TestCase {
         $this->assertEquals('{"message":"Group created successfully"}', (string)$result->getBody());
     }
 
-    public function testCreateGroupAlreadyExists() {
+    public function testCreateGroupAlreadyExists()
+    {
         $this->groupService->method('createGroup')->willReturn([
             'status' => 409,
             'body' => json_encode(['error' => 'Group already exists'])

@@ -10,14 +10,16 @@ use Psr\Http\Message\ServerRequestInterface;
 use Slim\Psr7\Request; // Import Slim's Request class
 use Slim\Psr7\Response; // Import Slim's Response class
 
-class UserControllerTest extends TestCase {
+class UserControllerTest extends TestCase
+{
     private $request;
     private $response;
     private $userService;
     private $userController;
 
     // This method is called before every test
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         // Create a mock request
         $this->request = $this->createMock(ServerRequestInterface::class);
         // Use a real response object
@@ -30,12 +32,13 @@ class UserControllerTest extends TestCase {
         $this->userController = new UserController($this->userService);
     }
 
-    public function testCreateUserSuccess() {
+    public function testCreateUserSuccess()
+    {
         $this->userService->method('createUser')->willReturn([
             'status' => 201,
             'body' => json_encode(['message' => 'User created successfully'])
         ]);
-        
+
         $result = $this->userController->createUser($this->request, $this->response);
 
         // Assertions
@@ -44,7 +47,8 @@ class UserControllerTest extends TestCase {
         $this->assertEquals('{"message":"User created successfully"}', (string)$result->getBody());
     }
 
-    public function testCreateUserAlreadyExists() {
+    public function testCreateUserAlreadyExists()
+    {
         $this->userService->method('createUser')->willReturn([
             'status' => 409,
             'body' => json_encode(['error' => 'User already exists'])
@@ -58,7 +62,8 @@ class UserControllerTest extends TestCase {
         $this->assertStringContainsString('error', (string)$result->getBody());
     }
 
-    public function testGetUserSuccess() {
+    public function testGetUserSuccess()
+    {
         $this->userService->method('getUsers')->willReturn([
             'status' => 200,
             'body' => json_encode(['username' => 'testuser', 'email' => 'testuser@example.com'])
@@ -72,7 +77,8 @@ class UserControllerTest extends TestCase {
         $this->assertEquals('{"username":"testuser","email":"testuser@example.com"}', (string)$result->getBody());
     }
 
-    public function testGetUserNotFound() {
+    public function testGetUserNotFound()
+    {
         $this->userService->method('getUsers')->willReturn([
             'status' => 404,
             'body' => json_encode(['error' => 'User not found'])

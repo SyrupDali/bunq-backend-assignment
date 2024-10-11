@@ -5,14 +5,17 @@ namespace App\Services;
 use PDO;
 use PDOException;
 
-class AdminService {
+class AdminService
+{
     private $pdo;
 
-    public function __construct(PDO $pdo) {
+    public function __construct(PDO $pdo)
+    {
         $this->pdo = $pdo;
     }
 
-    public function clearAllEntries() {
+    public function clearAllEntries()
+    {
         try {
             // Start a transaction
             $this->pdo->beginTransaction();

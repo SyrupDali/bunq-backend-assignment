@@ -9,13 +9,15 @@ use PHPUnit\Framework\TestCase;
 use PDO;
 use PDOStatement;
 
-class MessageServiceTest extends TestCase {
+class MessageServiceTest extends TestCase
+{
     private $mockPdo;
     private $mockUserService;
     private $mockGroupService;
     private $messageService;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         $this->mockPdo = $this->createMock(PDO::class);
         $this->mockUserService = $this->createMock(UserService::class);
         $this->mockGroupService = $this->createMock(GroupService::class);
@@ -24,7 +26,8 @@ class MessageServiceTest extends TestCase {
         $this->messageService = new MessageService($this->mockPdo, $this->mockUserService, $this->mockGroupService);
     }
 
-    public function testSendMessageSuccess() {
+    public function testSendMessageSuccess()
+    {
         // Set up mock for user validation
         $this->mockUserService->method('getUserId')->willReturn(1);
         $this->mockGroupService->method('getGroupId')->willReturn(1);
@@ -58,7 +61,8 @@ class MessageServiceTest extends TestCase {
         $this->assertEquals(json_encode(["message" => "Message sent successfully"]), $result['body']);
     }
 
-    public function testSendMessageUserNotFound() {
+    public function testSendMessageUserNotFound()
+    {
         // Set up mock for user validation to return null
         $this->mockUserService->method('getUserId')->willReturn(null);
 
@@ -72,7 +76,8 @@ class MessageServiceTest extends TestCase {
         $this->assertEquals(json_encode(['error' => 'User not found']), $result['body']);
     }
 
-    public function testSendMessageGroupNotFound() {
+    public function testSendMessageGroupNotFound()
+    {
         // Set up mock for user validation
         $this->mockUserService->method('getUserId')->willReturn(1);
         $this->mockGroupService->method('getGroupId')->willReturn(null); // Simulate group not found
@@ -87,7 +92,8 @@ class MessageServiceTest extends TestCase {
         $this->assertEquals(json_encode(['error' => 'Group not found']), $result['body']);
     }
 
-    public function testSendMessageUserNotMemberOfGroup() {
+    public function testSendMessageUserNotMemberOfGroup()
+    {
         // Set up mock for user validation
         $this->mockUserService->method('getUserId')->willReturn(1);
         $this->mockGroupService->method('getGroupId')->willReturn(1);
@@ -110,7 +116,8 @@ class MessageServiceTest extends TestCase {
         $this->assertEquals(json_encode(['error' => 'User is not a member of this group']), $result['body']);
     }
 
-    public function testSendMessageInsertFail() {
+    public function testSendMessageInsertFail()
+    {
         // Set up mock for user validation
         $this->mockUserService->method('getUserId')->willReturn(1);
         $this->mockGroupService->method('getGroupId')->willReturn(1);
@@ -143,23 +150,24 @@ class MessageServiceTest extends TestCase {
         $this->assertEquals(json_encode(['error' => 'Failed to send message: Insert failed']), $result['body']);
     }
 
-    public function testListMessagesSuccess() {
+    public function testListMessagesSuccess()
+    {
         // Set up mock for user validation
         $this->mockUserService->method('getUserId')->willReturn(1);
         $this->mockGroupService->method('getGroupId')->willReturn(1);
-    
+
         // Mock the statement for checking group membership
         $mockMembershipStatement = $this->createMock(PDOStatement::class);
         $mockMembershipStatement->method('execute')->willReturn(true);
         $mockMembershipStatement->method('fetch')->willReturn(['user_id' => 1]); // User is a member of the group
-    
+
         // Mock the statement for fetching messages
         $mockMessageStatement = $this->createMock(PDOStatement::class);
         $mockMessageStatement->method('execute')->willReturn(true);
         $mockMessageStatement->method('fetchAll')->willReturn([
             ['message' => 'Hello, group!', 'username' => 'testuser', 'created_at' => '2024-10-10 10:00:00'] // Assuming this is in UTC
         ]);
-    
+
         $this->mockPdo->method('prepare')
             ->willReturnCallback(function ($sql) use ($mockMembershipStatement, $mockMessageStatement) {
                 if (strpos($sql, 'SELECT * FROM group_users') !== false) {
@@ -168,27 +176,28 @@ class MessageServiceTest extends TestCase {
                     return $mockMessageStatement;
                 }
             });
-    
+
         // Convert the mock timestamp from UTC to Amsterdam time (UTC+2 or UTC+1 based on DST)
         $createdAtUtc = new \DateTime('2024-10-10 10:00:00', new \DateTimeZone('UTC'));
         $createdAtUtc->setTimezone(new \DateTimeZone('Europe/Amsterdam'));
         $expectedCreatedAtAmsterdam = $createdAtUtc->format('Y-m-d H:i:s');
-    
+
         // Call the listMessages function
         $result = $this->messageService->listMessages([
             'group_name' => 'Test Group',
             'username' => 'testuser'
         ]);
-    
+
         // Assert that the status and body are as expected
         $this->assertEquals(200, $result['status']);
         $this->assertEquals(json_encode([
             ['message' => 'Hello, group!', 'username' => 'testuser', 'created_at' => $expectedCreatedAtAmsterdam]
         ]), $result['body']);
     }
-    
 
-    public function testListMessagesUserNotFound() {
+
+    public function testListMessagesUserNotFound()
+    {
         // Set up mock for user validation to return null
         $this->mockUserService->method('getUserId')->willReturn(null);
 

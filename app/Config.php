@@ -2,7 +2,8 @@
 
 namespace App;
 
-class Config {
+class Config
+{
     /**
      * Path to the SQLite file
      */

@@ -7,19 +7,22 @@ use PHPUnit\Framework\TestCase;
 use PDO;
 use PDOStatement; // Import PDOStatement
 
-class UserServiceTest extends TestCase {
+class UserServiceTest extends TestCase
+{
     private $mockPdo;
     private $userService;
 
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         // Create a mock for PDO
         $this->mockPdo = $this->createMock(PDO::class);
-        
+
         // Instantiate the UserService with the mocked PDO
         $this->userService = new UserService($this->mockPdo);
     }
 
-    public function testCreateUserSuccess() {
+    public function testCreateUserSuccess()
+    {
         // Mock the insert into users to simulate success
         $mockInsertStatement = $this->createMock(PDOStatement::class);
         $mockInsertStatement->method('execute')->willReturn(true); // Simulate successful insert
@@ -42,7 +45,8 @@ class UserServiceTest extends TestCase {
         ]), $result['body']);
     }
 
-    public function testCreateUserAlreadyExists() {
+    public function testCreateUserAlreadyExists()
+    {
         // Mock the statement to simulate user already exists
         $mockCheckStatement = $this->createMock(PDOStatement::class);
         $mockCheckStatement->method('execute')->willReturn(true);
@@ -60,7 +64,8 @@ class UserServiceTest extends TestCase {
         $this->assertEquals(json_encode(['error' => 'Username already exists']), $result['body']);
     }
 
-    public function testCreateUserInsertFail() {
+    public function testCreateUserInsertFail()
+    {
         // Mock the check for existing user to return false
         $mockCheckStatement = $this->createMock(PDOStatement::class);
         $mockCheckStatement->method('execute')->willReturn(true);
@@ -87,19 +92,20 @@ class UserServiceTest extends TestCase {
         $this->assertEquals(json_encode(['error' => 'Failed to create user']), $result['body']);
     }
 
-    public function testGetUsersSuccess() {
+    public function testGetUsersSuccess()
+    {
         // Mock the statement for fetching users
         $mockStatement = $this->createMock(PDOStatement::class);
         $mockStatement->method('fetchAll')->willReturn([
             ['id' => 1, 'username' => 'testuser1', 'email' => 'testuser1@example.com'],
             ['id' => 2, 'username' => 'testuser2', 'email' => 'testuser2@example.com'],
         ]); // Simulate multiple users
-    
+
         $this->mockPdo->method('query')->willReturn($mockStatement);
-    
+
         // Call the service method
         $result = $this->userService->getUsers();
-    
+
         // Assertions
         $this->assertEquals(200, $result['status']);
         $this->assertEquals(json_encode([
@@ -108,8 +114,9 @@ class UserServiceTest extends TestCase {
         ]), $result['body']);
     }
 
-    
-    public function testGetUsersFail() {
+
+    public function testGetUsersFail()
+    {
         // Mock the query method to throw a PDOException
         $this->mockPdo->method('query')->willThrowException(new \PDOException('Database error'));
 

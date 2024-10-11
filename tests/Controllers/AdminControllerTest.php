@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\Controllers;
 
 use App\Controllers\AdminController;
@@ -32,12 +33,12 @@ class AdminControllerTest extends TestCase
     }
 
     public function testClearAll()
-    {   
+    {
         $this->adminService->method('clearAllEntries')->willReturn([
             'status' => 200,
             'body' => json_encode(['message' => 'All entries cleared successfully'])
         ]);
-        
+
         $result = $this->adminController->clearAllEntries($this->request, $this->response);
 
         // Assertions
@@ -47,12 +48,12 @@ class AdminControllerTest extends TestCase
     }
 
     public function testClearAllError()
-    {   
+    {
         $this->adminService->method('clearAllEntries')->willReturn([
             'status' => 500,
             'body' => json_encode(['error' => 'An unexpected error occurred'])
         ]);
-        
+
         $result = $this->adminController->clearAllEntries($this->request, $this->response);
 
         // Assertions

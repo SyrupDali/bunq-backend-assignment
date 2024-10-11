@@ -5,14 +5,17 @@ namespace App\Services;
 use PDO;
 use PDOException;
 
-class UserService {
+class UserService
+{
     private $pdo;
 
-    public function __construct(PDO $pdo) {
+    public function __construct(PDO $pdo)
+    {
         $this->pdo = $pdo;
     }
 
-    public function getUsers() {
+    public function getUsers()
+    {
         try {
             $stmt = $this->pdo->query("SELECT * FROM users");
             return [
@@ -24,7 +27,8 @@ class UserService {
         }
     }
 
-    public function createUser($input) {
+    public function createUser($input)
+    {
         $username = $input['username'] ?? null;
 
         if (!$username) {
@@ -54,14 +58,16 @@ class UserService {
         }
     }
 
-    private function errorResponse($message, $code) {
+    private function errorResponse($message, $code)
+    {
         return [
             'status' => $code,
             'body' => json_encode(['error' => $message])
         ];
     }
 
-    public function getUserId($username) {
+    public function getUserId($username)
+    {
         $stmt = $this->pdo->prepare("SELECT id FROM users WHERE username = :username");
         $stmt->execute([':username' => $username]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);

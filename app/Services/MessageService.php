@@ -8,18 +8,21 @@ use DateTime;
 use DateTimeZone;
 
 
-class MessageService {
+class MessageService
+{
     private $pdo;
     private $userService;
     private $groupService;
 
-    public function __construct(PDO $pdo, UserService $userService, GroupService $groupService) {
+    public function __construct(PDO $pdo, UserService $userService, GroupService $groupService)
+    {
         $this->pdo = $pdo;
         $this->userService = $userService;
         $this->groupService = $groupService;
     }
 
-    public function sendMessage($input) {
+    public function sendMessage($input)
+    {
         $group_name = $input['group_name'] ?? null;
         $username = $input['username'] ?? null;
         $message = $input['message'] ?? null;
@@ -61,7 +64,8 @@ class MessageService {
         }
     }
 
-    public function listMessages($input) {
+    public function listMessages($input)
+    {
         $group_name = $input['group_name'] ?? null;
         $username = $input['username'] ?? null;
 
@@ -115,7 +119,8 @@ class MessageService {
         }
     }
 
-    private function errorResponse($message, $code) {
+    private function errorResponse($message, $code)
+    {
         return [
             'status' => $code,
             'body' => json_encode(['error' => $message])

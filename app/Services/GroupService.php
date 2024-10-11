@@ -5,16 +5,19 @@ namespace App\Services;
 use PDO;
 use PDOException;
 
-class GroupService {
+class GroupService
+{
     private $pdo;
     private $userService;
-    
-    public function __construct(PDO $pdo, UserService $userService) {
+
+    public function __construct(PDO $pdo, UserService $userService)
+    {
         $this->pdo = $pdo;
         $this->userService = $userService;
     }
 
-    public function getGroups() {
+    public function getGroups()
+    {
         try {
             $stmt = $this->pdo->query("SELECT * FROM groups");
             // I want the real username instead of the user_id
@@ -34,7 +37,8 @@ class GroupService {
         }
     }
 
-    public function createGroup($input) {
+    public function createGroup($input)
+    {
         $group_name = $input['group_name'] ?? null;
         $username = $input['username'] ?? null;
 
@@ -73,7 +77,8 @@ class GroupService {
         }
     }
 
-    public function joinGroup($input) {
+    public function joinGroup($input)
+    {
         $group_name = $input['group_name'] ?? null;
         $username = $input['username'] ?? null;
 
@@ -113,14 +118,16 @@ class GroupService {
         }
     }
 
-    private function errorResponse($message, $code) {
+    private function errorResponse($message, $code)
+    {
         return [
             'status' => $code,
             'body' => json_encode(['error' => $message])
         ];
     }
 
-    public function getGroupId($group_name) {
+    public function getGroupId($group_name)
+    {
         $stmt = $this->pdo->prepare("SELECT id FROM groups WHERE name = :group_name");
         $stmt->execute([':group_name' => $group_name]);
         $group = $stmt->fetch(PDO::FETCH_ASSOC);

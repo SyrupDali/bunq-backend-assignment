@@ -5,7 +5,8 @@ namespace App;
 /**
  * SQLite connection
  */
-class SQLiteConnection {
+class SQLiteConnection
+{
     /**
      * PDO instance
      * @var \PDO|null 
@@ -16,7 +17,8 @@ class SQLiteConnection {
      * Return an instance of the PDO object that connects to the SQLite database
      * @return \PDO
      */
-    public function connect() {
+    public function connect()
+    {
         if ($this->pdo == null) {
             try {
                 $this->pdo = new \PDO("sqlite:" . Config::PATH_TO_SQLITE_FILE);

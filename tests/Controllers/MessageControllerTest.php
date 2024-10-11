@@ -10,14 +10,16 @@ use Psr\Http\Message\ServerRequestInterface;
 use Slim\Psr7\Request; // Import Slim's Request class
 use Slim\Psr7\Response; // Import Slim's Response class
 
-class MessageControllerTest extends TestCase {
+class MessageControllerTest extends TestCase
+{
     private $request;
     private $response;
     private $messageService;
     private $messageController;
 
     // This method is called before every test
-    protected function setUp(): void {
+    protected function setUp(): void
+    {
         // Create a mock request
         $this->request = $this->createMock(ServerRequestInterface::class);
         // Use a real response object
@@ -30,7 +32,8 @@ class MessageControllerTest extends TestCase {
         $this->messageController = new MessageController($this->messageService);
     }
 
-    public function testSendMessageSuccess() {
+    public function testSendMessageSuccess()
+    {
         $this->messageService->method('sendMessage')->willReturn([
             'status' => 201,
             'body' => json_encode(['message' => 'Message sent successfully'])
@@ -45,7 +48,8 @@ class MessageControllerTest extends TestCase {
         $this->assertEquals('{"message":"Message sent successfully"}', (string)$result->getBody());
     }
 
-    public function testSendMessageUserNotFound() {
+    public function testSendMessageUserNotFound()
+    {
         $this->messageService->method('sendMessage')->willReturn([
             'status' => 404,
             'body' => json_encode(['error' => 'User not found'])
@@ -60,7 +64,8 @@ class MessageControllerTest extends TestCase {
         $this->assertStringContainsString('error', (string)$result->getBody());
     }
 
-    public function testListMessagesSuccess() {
+    public function testListMessagesSuccess()
+    {
         $this->messageService->method('listMessages')->willReturn([
             'status' => 200,
             'body' => json_encode([
@@ -76,12 +81,13 @@ class MessageControllerTest extends TestCase {
         $this->assertEquals('[{"message":"Hello, group!","username":"testuser","created_at":"2024-10-10 10:00:00"}]', (string)$result->getBody());
     }
 
-    public function testListMessagesUserNotFound() {
+    public function testListMessagesUserNotFound()
+    {
         $this->messageService->method('listMessages')->willReturn([
             'status' => 404,
             'body' => json_encode(['error' => 'User not found'])
         ]);
-        
+
         $result = $this->messageController->listMessages($this->request, $this->response);
 
         // Assertions

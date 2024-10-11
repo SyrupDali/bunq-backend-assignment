@@ -20,7 +20,7 @@ class MessageController
         // Retrieve the input from the request body
         $input = json_decode($request->getBody()->getContents(), true);
         $result = $this->messageService->sendMessage($input);
-        
+
         // Set the response status and body based on the result
         $response->getBody()->write($result['body']);
         return $response->withStatus($result['status'])->withHeader('Content-Type', 'application/json');
@@ -30,7 +30,7 @@ class MessageController
     {
         $input = json_decode($request->getBody()->getContents(), true);
         $result = $this->messageService->listMessages($input);
-        
+
         $response->getBody()->write($result['body']);
         return $response->withStatus($result['status'])->withHeader('Content-Type', 'application/json');
     }

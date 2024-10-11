@@ -1,4 +1,5 @@
 <?php
+
 namespace Tests\Services;
 
 use App\Services\AdminService;
@@ -24,10 +25,10 @@ class AdminServiceTest extends TestCase
     {
         // Mock the PDO methods used in clearAllEntries
         $this->pdo->expects($this->once())->method('beginTransaction');
-        
+
         // Expect exec to be called 5 times, each returning an integer (rows affected)
         $this->pdo->expects($this->exactly(5))->method('exec')->willReturn(1);
-        
+
         $this->pdo->expects($this->once())->method('commit');
 
         // Call the method and assert the response
@@ -36,10 +37,11 @@ class AdminServiceTest extends TestCase
         $this->assertStringContainsString('All entries cleared successfully', $result['body']);
     }
 
-    public function testClearAllEntriesFailure(){
+    public function testClearAllEntriesFailure()
+    {
         // Simulate a failure during the first delete query
         $this->pdo->expects($this->once())->method('beginTransaction');
-        
+
         // Expect exec to throw an exception on the first call
         $this->pdo->expects($this->once())->method('exec')
             ->will($this->throwException(new PDOException('Simulated failure')));
