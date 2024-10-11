@@ -11,23 +11,32 @@ use Slim\Psr7\Request; // Import Slim's Request class
 use Slim\Psr7\Response; // Import Slim's Response class
 
 class UserControllerTest extends TestCase {
-    public function testCreateUserSuccess() {
+    private $request;
+    private $response;
+    private $userService;
+    private $userController;
+
+    // This method is called before every test
+    protected function setUp(): void {
         // Create a mock request
-        $request = $this->createMock(ServerRequestInterface::class);
-        $response = new Response();
+        $this->request = $this->createMock(ServerRequestInterface::class);
+        // Use a real response object
+        $this->response = new Response();
 
         // Create a mock for the UserService
-        $userService = $this->createMock(UserService::class);
-        $userService->method('createUser')->willReturn([
+        $this->userService = $this->createMock(UserService::class);
+
+        // Instantiate the controller with the mocked service
+        $this->userController = new UserController($this->userService);
+    }
+
+    public function testCreateUserSuccess() {
+        $this->userService->method('createUser')->willReturn([
             'status' => 201,
             'body' => json_encode(['message' => 'User created successfully'])
         ]);
-
-        // Instantiate the controller with the mocked service
-        $controller = new UserController($userService);
-
-        // Call the method
-        $result = $controller->createUser($request, $response);
+        
+        $result = $this->userController->createUser($this->request, $this->response);
 
         // Assertions
         $this->assertInstanceOf(ResponseInterface::class, $result);
@@ -36,22 +45,12 @@ class UserControllerTest extends TestCase {
     }
 
     public function testCreateUserAlreadyExists() {
-        // Create a mock request
-        $request = $this->createMock(ServerRequestInterface::class);
-        $response = new Response();
-
-        // Create a mock for the UserService
-        $userService = $this->createMock(UserService::class);
-        $userService->method('createUser')->willReturn([
+        $this->userService->method('createUser')->willReturn([
             'status' => 409,
             'body' => json_encode(['error' => 'User already exists'])
         ]);
 
-        // Instantiate the controller with the mocked service
-        $controller = new UserController($userService);
-
-        // Call the method
-        $result = $controller->createUser($request, $response);
+        $result = $this->userController->createUser($this->request, $this->response);
 
         // Assertions
         $this->assertInstanceOf(ResponseInterface::class, $result);
@@ -60,22 +59,12 @@ class UserControllerTest extends TestCase {
     }
 
     public function testGetUserSuccess() {
-        // Create a mock request
-        $request = $this->createMock(ServerRequestInterface::class);
-        $response = new Response();
-
-        // Create a mock for the UserService
-        $userService = $this->createMock(UserService::class);
-        $userService->method('getUsers')->willReturn([
+        $this->userService->method('getUsers')->willReturn([
             'status' => 200,
             'body' => json_encode(['username' => 'testuser', 'email' => 'testuser@example.com'])
         ]);
 
-        // Instantiate the controller with the mocked service
-        $controller = new UserController($userService);
-
-        // Call the method
-        $result = $controller->getUsers($request, $response);
+        $result = $this->userController->getUsers($this->request, $this->response);
 
         // Assertions
         $this->assertInstanceOf(ResponseInterface::class, $result);
@@ -84,22 +73,12 @@ class UserControllerTest extends TestCase {
     }
 
     public function testGetUserNotFound() {
-        // Create a mock request
-        $request = $this->createMock(ServerRequestInterface::class);
-        $response = new Response();
-
-        // Create a mock for the UserService
-        $userService = $this->createMock(UserService::class);
-        $userService->method('getUsers')->willReturn([
+        $this->userService->method('getUsers')->willReturn([
             'status' => 404,
             'body' => json_encode(['error' => 'User not found'])
         ]);
 
-        // Instantiate the controller with the mocked service
-        $controller = new UserController($userService);
-
-        // Call the method
-        $result = $controller->getUsers($request, $response);
+        $result = $this->userController->getUsers($this->request, $this->response);
 
         // Assertions
         $this->assertInstanceOf(ResponseInterface::class, $result);

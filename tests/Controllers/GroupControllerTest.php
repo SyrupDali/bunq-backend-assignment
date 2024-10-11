@@ -11,23 +11,32 @@ use Slim\Psr7\Request; // Import Slim's Request class
 use Slim\Psr7\Response; // Import Slim's Response class
 
 class GroupControllerTest extends TestCase {
-    public function testCreateGroupSuccess() {
+    private $request;
+    private $response;
+    private $groupService;
+    private $groupController;
+
+    // This method is called before every test
+    protected function setUp(): void {
         // Create a mock request
-        $request = $this->createMock(ServerRequestInterface::class);
-        $response = new Response();
+        $this->request = $this->createMock(ServerRequestInterface::class);
+        // Use a real response object
+        $this->response = new Response();
 
         // Create a mock for the GroupService
-        $groupService = $this->createMock(GroupService::class);
-        $groupService->method('createGroup')->willReturn([
+        $this->groupService = $this->createMock(GroupService::class);
+
+        // Instantiate the controller with the mocked service
+        $this->groupController = new GroupController($this->groupService);
+    }
+
+    public function testCreateGroupSuccess() {
+        $this->groupService->method('createGroup')->willReturn([
             'status' => 201,
             'body' => json_encode(['message' => 'Group created successfully'])
         ]);
-
-        // Instantiate the controller with the mocked service
-        $controller = new GroupController($groupService);
-
         // Call the method
-        $result = $controller->createGroup($request, $response);
+        $result = $this->groupController->createGroup($this->request, $this->response);
 
         // Assertions
         $this->assertInstanceOf(ResponseInterface::class, $result);
@@ -36,22 +45,12 @@ class GroupControllerTest extends TestCase {
     }
 
     public function testCreateGroupAlreadyExists() {
-        // Create a mock request
-        $request = $this->createMock(ServerRequestInterface::class);
-        $response = new Response();
-
-        // Create a mock for the GroupService
-        $groupService = $this->createMock(GroupService::class);
-        $groupService->method('createGroup')->willReturn([
+        $this->groupService->method('createGroup')->willReturn([
             'status' => 409,
             'body' => json_encode(['error' => 'Group already exists'])
         ]);
 
-        // Instantiate the controller with the mocked service
-        $controller = new GroupController($groupService);
-
-        // Call the method
-        $result = $controller->createGroup($request, $response);
+        $result = $this->groupController->createGroup($this->request, $this->response);
 
         // Assertions
         $this->assertInstanceOf(ResponseInterface::class, $result);

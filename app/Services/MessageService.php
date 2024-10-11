@@ -19,7 +19,7 @@ class MessageService {
         $this->groupService = $groupService;
     }
 
-    public function sendMessage(array $input) {
+    public function sendMessage($input) {
         $group_name = $input['group_name'] ?? null;
         $username = $input['username'] ?? null;
         $message = $input['message'] ?? null;

@@ -11,35 +11,33 @@ use Slim\Psr7\Request; // Import Slim's Request class
 use Slim\Psr7\Response; // Import Slim's Response class
 
 class MessageControllerTest extends TestCase {
-    public function testSendMessageSuccess() {
+    private $request;
+    private $response;
+    private $messageService;
+    private $messageController;
+
+    // This method is called before every test
+    protected function setUp(): void {
         // Create a mock request
-        $request = $this->createMock(ServerRequestInterface::class);
-        $response = new Response();
+        $this->request = $this->createMock(ServerRequestInterface::class);
+        // Use a real response object
+        $this->response = new Response();
 
         // Create a mock for the MessageService
-        $messageService = $this->createMock(MessageService::class);
-        $messageService->method('sendMessage')->willReturn([
+        $this->messageService = $this->createMock(MessageService::class);
+
+        // Instantiate the controller with the mocked service
+        $this->messageController = new MessageController($this->messageService);
+    }
+
+    public function testSendMessageSuccess() {
+        $this->messageService->method('sendMessage')->willReturn([
             'status' => 201,
             'body' => json_encode(['message' => 'Message sent successfully'])
         ]);
 
-        // Instantiate the controller with the mocked service
-        $controller = new MessageController($messageService);
-
-        // Prepare request body for the mock request
-        $requestBody = json_encode([
-            'group_name' => 'Test Group',
-            'username' => 'testuser',
-            'message' => 'Hello, group!'
-        ]);
-
-        // Mock the method getBody to return the request body
-        $request->method('getBody')->willReturn(new \Slim\Psr7\Stream(fopen('php://temp', 'r+')));
-        $request->getBody()->write($requestBody);
-        $request->getBody()->rewind();
-
         // Call the method
-        $result = $controller->sendMessage($request, $response);
+        $result = $this->messageController->sendMessage($this->request, $this->response);
 
         // Assertions
         $this->assertInstanceOf(ResponseInterface::class, $result);
@@ -48,34 +46,13 @@ class MessageControllerTest extends TestCase {
     }
 
     public function testSendMessageUserNotFound() {
-        // Create a mock request
-        $request = $this->createMock(ServerRequestInterface::class);
-        $response = new Response();
-
-        // Create a mock for the MessageService
-        $messageService = $this->createMock(MessageService::class);
-        $messageService->method('sendMessage')->willReturn([
+        $this->messageService->method('sendMessage')->willReturn([
             'status' => 404,
             'body' => json_encode(['error' => 'User not found'])
         ]);
 
-        // Instantiate the controller with the mocked service
-        $controller = new MessageController($messageService);
-
-        // Prepare request body for the mock request
-        $requestBody = json_encode([
-            'group_name' => 'Test Group',
-            'username' => 'testuser',
-            'message' => 'Hello, group!'
-        ]);
-
-        // Mock the method getBody to return the request body
-        $request->method('getBody')->willReturn(new \Slim\Psr7\Stream(fopen('php://temp', 'r+')));
-        $request->getBody()->write($requestBody);
-        $request->getBody()->rewind();
-
         // Call the method
-        $result = $controller->sendMessage($request, $response);
+        $result = $this->messageController->sendMessage($this->request, $this->response);
 
         // Assertions
         $this->assertInstanceOf(ResponseInterface::class, $result);
@@ -84,35 +61,14 @@ class MessageControllerTest extends TestCase {
     }
 
     public function testListMessagesSuccess() {
-        // Create a mock request
-        $request = $this->createMock(ServerRequestInterface::class);
-        $response = new Response();
-
-        // Create a mock for the MessageService
-        $messageService = $this->createMock(MessageService::class);
-        $messageService->method('listMessages')->willReturn([
+        $this->messageService->method('listMessages')->willReturn([
             'status' => 200,
             'body' => json_encode([
                 ['message' => 'Hello, group!', 'username' => 'testuser', 'created_at' => '2024-10-10 10:00:00']
             ])
         ]);
-
-        // Instantiate the controller with the mocked service
-        $controller = new MessageController($messageService);
-
-        // Prepare request body for the mock request
-        $requestBody = json_encode([
-            'group_name' => 'Test Group',
-            'username' => 'testuser'
-        ]);
-
-        // Mock the method getBody to return the request body
-        $request->method('getBody')->willReturn(new \Slim\Psr7\Stream(fopen('php://temp', 'r+')));
-        $request->getBody()->write($requestBody);
-        $request->getBody()->rewind();
-
         // Call the method
-        $result = $controller->listMessages($request, $response);
+        $result = $this->messageController->listMessages($this->request, $this->response);
 
         // Assertions
         $this->assertInstanceOf(ResponseInterface::class, $result);
@@ -121,33 +77,12 @@ class MessageControllerTest extends TestCase {
     }
 
     public function testListMessagesUserNotFound() {
-        // Create a mock request
-        $request = $this->createMock(ServerRequestInterface::class);
-        $response = new Response();
-
-        // Create a mock for the MessageService
-        $messageService = $this->createMock(MessageService::class);
-        $messageService->method('listMessages')->willReturn([
+        $this->messageService->method('listMessages')->willReturn([
             'status' => 404,
             'body' => json_encode(['error' => 'User not found'])
         ]);
-
-        // Instantiate the controller with the mocked service
-        $controller = new MessageController($messageService);
-
-        // Prepare request body for the mock request
-        $requestBody = json_encode([
-            'group_name' => 'Test Group',
-            'username' => 'testuser'
-        ]);
-
-        // Mock the method getBody to return the request body
-        $request->method('getBody')->willReturn(new \Slim\Psr7\Stream(fopen('php://temp', 'r+')));
-        $request->getBody()->write($requestBody);
-        $request->getBody()->rewind();
-
-        // Call the method
-        $result = $controller->listMessages($request, $response);
+        
+        $result = $this->messageController->listMessages($this->request, $this->response);
 
         // Assertions
         $this->assertInstanceOf(ResponseInterface::class, $result);

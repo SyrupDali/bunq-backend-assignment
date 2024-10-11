@@ -11,26 +11,34 @@ use Slim\Psr7\Response; // Import Slim's Response class
 
 class AdminControllerTest extends TestCase
 {
-    public function testClearAll()
+    private $request;
+    private $response;
+    private $adminService;
+    private $adminController;
+
+    // This method is called before every test
+    protected function setUp(): void
     {
         // Create a mock request
-        $request = $this->createMock(ServerRequestInterface::class);
-
-        // Create a mock response
-        $response = new Response();
+        $this->request = $this->createMock(ServerRequestInterface::class);
+        // Use a real response object
+        $this->response = new Response();
 
         // Create a mock for the AdminService
-        $adminService = $this->createMock(AdminService::class);
-        $adminService->method('clearAllEntries')->willReturn([
+        $this->adminService = $this->createMock(AdminService::class);
+
+        // Instantiate the controller with the mocked service
+        $this->adminController = new AdminController($this->adminService);
+    }
+
+    public function testClearAll()
+    {   
+        $this->adminService->method('clearAllEntries')->willReturn([
             'status' => 200,
             'body' => json_encode(['message' => 'All entries cleared successfully'])
         ]);
-
-        // Instantiate the controller with the mocked service
-        $controller = new AdminController($adminService);
-
-        // Call the method
-        $result = $controller->clearAllEntries($request, $response);
+        
+        $result = $this->adminController->clearAllEntries($this->request, $this->response);
 
         // Assertions
         $this->assertInstanceOf(ResponseInterface::class, $result);
@@ -39,23 +47,13 @@ class AdminControllerTest extends TestCase
     }
 
     public function testClearAllError()
-    {
-        // Create a mock request
-        $request = $this->createMock(ServerRequestInterface::class);
-        $response = new Response();
-
-        // Create a mock for the AdminService
-        $adminService = $this->createMock(AdminService::class);
-        $adminService->method('clearAllEntries')->willReturn([
+    {   
+        $this->adminService->method('clearAllEntries')->willReturn([
             'status' => 500,
             'body' => json_encode(['error' => 'An unexpected error occurred'])
         ]);
-
-        // Instantiate the controller with the mocked service
-        $controller = new AdminController($adminService);
-
-        // Call the method
-        $result = $controller->clearAllEntries($request, $response);
+        
+        $result = $this->adminController->clearAllEntries($this->request, $this->response);
 
         // Assertions
         $this->assertInstanceOf(ResponseInterface::class, $result);

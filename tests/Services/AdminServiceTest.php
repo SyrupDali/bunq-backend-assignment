@@ -37,18 +37,18 @@ class AdminServiceTest extends TestCase
     }
 
     public function testClearAllEntriesFailure(){
-    // Simulate a failure during the first delete query
-    $this->pdo->expects($this->once())->method('beginTransaction');
-    
-    // Expect exec to throw an exception on the first call
-    $this->pdo->expects($this->once())->method('exec')
-        ->will($this->throwException(new PDOException('Simulated failure')));
+        // Simulate a failure during the first delete query
+        $this->pdo->expects($this->once())->method('beginTransaction');
+        
+        // Expect exec to throw an exception on the first call
+        $this->pdo->expects($this->once())->method('exec')
+            ->will($this->throwException(new PDOException('Simulated failure')));
 
-    $this->pdo->expects($this->once())->method('rollBack');
+        $this->pdo->expects($this->once())->method('rollBack');
 
-    // Call the method and assert the error response
-    $result = $this->adminService->clearAllEntries();
-    $this->assertEquals(500, $result['status']);
-    $this->assertStringContainsString('Failed to clear entries', $result['body']);
+        // Call the method and assert the error response
+        $result = $this->adminService->clearAllEntries();
+        $this->assertEquals(500, $result['status']);
+        $this->assertStringContainsString('Failed to clear entries', $result['body']);
     }
 }
